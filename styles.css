@@ -42,3 +42,20 @@
 @keyframes drawline{to{stroke-dashoffset:0}}
 @media (max-width: 1050px){.command-feature{flex-direction:column;align-items:flex-start}.trust-strip{grid-template-columns:1fr 1fr 1fr}.command-grid,.workflow-grid{grid-template-columns:1fr 1fr}.dashboard-preview,.alerts-grid,.integrations-grid{grid-template-columns:1fr 1fr}}
 @media (max-width: 720px){.trust-strip,.command-grid,.workflow-grid,.dashboard-preview,.alerts-grid,.integrations-grid,.command-bottom{grid-template-columns:1fr}}
+
+/* Premium polish pass */
+.hero h1{max-width:980px}
+.hero .lead{max-width:820px}
+.topbar{box-shadow:0 8px 30px rgba(0,0,0,.24)}
+.panel.dark{border-color:rgba(152,181,214,.22)}
+.trust-strip span{font-size:12px;letter-spacing:.03em;background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));border-color:rgba(152,181,214,.2)}
+.architecture-flow .flow-node{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));border-color:rgba(152,181,214,.24)}
+.architecture-flow .flow-node strong{font-size:17px}
+.architecture-flow .flow-node .muted{font-size:14px;line-height:1.55}
+.timeline-item{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));border-color:rgba(152,181,214,.22)}
+.timeline-item strong{display:block;margin-bottom:4px}
+.timeline-item p{margin:0}
+.card.highlight{border-color:rgba(114,240,221,.28)}
+@media (max-width: 720px){
+  .hero-links .btn{width:100%}
+}

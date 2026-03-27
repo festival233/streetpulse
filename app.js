@@ -5,6 +5,132 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const setupResponsiveHeader = () => {
+    const headerInner = document.querySelector('.topbar .inner');
+    const desktopNav = headerInner?.querySelector('.nav');
+
+    if (!headerInner || !desktopNav || headerInner.dataset.responsiveReady === 'true') {
+      return;
+    }
+
+    headerInner.dataset.responsiveReady = 'true';
+    const page = document.documentElement;
+    const preferredLangFromUrl = new URLSearchParams(window.location.search).get('lang');
+    const savedLang = window.localStorage.getItem('streetpulse_lang');
+    const initialLang = (preferredLangFromUrl || savedLang || page.lang || 'en').toLowerCase();
+    const supportedLanguages = [
+      { code: 'en', label: 'EN' },
+      { code: 'fr', label: 'FR' },
+      { code: 'ar', label: 'AR' }
+    ];
+
+    const applyLanguage = (langCode) => {
+      if (!supportedLanguages.some((language) => language.code === langCode)) {
+        return;
+      }
+
+      page.lang = langCode;
+      window.localStorage.setItem('streetpulse_lang', langCode);
+      const params = new URLSearchParams(window.location.search);
+      params.set('lang', langCode);
+      const queryString = params.toString();
+      const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`;
+      window.history.replaceState({}, '', nextUrl);
+
+      document.querySelectorAll('[data-language-option]').forEach((button) => {
+        const selected = button.getAttribute('data-language-option') === langCode;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+
+      trackEvent('language_change', {
+        language: langCode,
+        page_path: window.location.pathname
+      });
+    };
+
+    const buildLanguageSwitcher = () => {
+      const switcher = document.createElement('div');
+      switcher.className = 'language-switcher';
+      switcher.setAttribute('role', 'group');
+      switcher.setAttribute('aria-label', 'Language switcher');
+
+      supportedLanguages.forEach((language) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'lang-btn';
+        button.textContent = language.label;
+        button.setAttribute('data-language-option', language.code);
+        button.setAttribute('aria-label', `Switch to ${language.code.toUpperCase()}`);
+        button.addEventListener('click', () => applyLanguage(language.code));
+        switcher.appendChild(button);
+      });
+
+      return switcher;
+    };
+
+    const headerActions = document.createElement('div');
+    headerActions.className = 'header-actions';
+    const desktopLanguageSwitcher = buildLanguageSwitcher();
+    headerActions.appendChild(desktopLanguageSwitcher);
+
+    const menuButton = document.createElement('button');
+    menuButton.type = 'button';
+    menuButton.className = 'nav-toggle';
+    menuButton.setAttribute('aria-label', 'Toggle navigation menu');
+    menuButton.setAttribute('aria-expanded', 'false');
+    menuButton.innerHTML = '<span></span><span></span><span></span>';
+    headerActions.appendChild(menuButton);
+    headerInner.appendChild(headerActions);
+
+    const mobileMenu = document.createElement('div');
+    mobileMenu.className = 'mobile-menu';
+    mobileMenu.id = 'mobile-menu';
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    mobileMenu.innerHTML = desktopNav.innerHTML;
+    menuButton.setAttribute('aria-controls', mobileMenu.id);
+
+    const mobileLanguageSwitcher = buildLanguageSwitcher();
+    mobileMenu.appendChild(mobileLanguageSwitcher);
+
+    const topbar = document.querySelector('.topbar');
+    topbar?.appendChild(mobileMenu);
+
+    const closeMenu = () => {
+      menuButton.setAttribute('aria-expanded', 'false');
+      mobileMenu.setAttribute('aria-hidden', 'true');
+      topbar?.classList.remove('menu-open');
+    };
+
+    const toggleMenu = () => {
+      const isOpen = menuButton.getAttribute('aria-expanded') === 'true';
+      menuButton.setAttribute('aria-expanded', String(!isOpen));
+      mobileMenu.setAttribute('aria-hidden', String(isOpen));
+      topbar?.classList.toggle('menu-open', !isOpen);
+    };
+
+    menuButton.addEventListener('click', toggleMenu);
+    mobileMenu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', closeMenu);
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 720) {
+        closeMenu();
+      }
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+      }
+    });
+
+    applyLanguage(initialLang);
+  };
+
+  setupResponsiveHeader();
+
   const isPrimaryCta = (link) => link.classList.contains('btn') || link.classList.contains('action-card') || link.classList.contains('action-pill');
 
   document.querySelectorAll('a[href]').forEach((link) => {
